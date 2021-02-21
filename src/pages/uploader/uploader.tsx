@@ -16,6 +16,7 @@ import LoadingModal from './loading-modal'
 import { TGlobalStore } from '../../store'
 import Switch from "react-switch"
 import ClippingsUploadHelp from './help'
+import WeReadLogin from './weread'
 const styles = require('./uploader.css').default
 
 function delay(ms: number) {
@@ -215,6 +216,9 @@ function UploaderPage() {
           message={messages[0]}
         />
       )}
+      <hr/>
+
+      <WeReadLogin />
     </section>
   )
 }
