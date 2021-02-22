@@ -26,8 +26,8 @@ export async function request<T>(url: string, options: RequestInit = {}): Promis
 
   try {
     const response: IBaseResponseData = await fetch(API_HOST + '/api' + url, options).then(res => res.json())
-    if (response.status >= 400) {
-      throw new Error(response.msg)
+    if (response.status >= 400 || (response as any).code >= 400) {
+      throw new Error(response.msg || (response as any).error)
     }
 
     return response.data as T

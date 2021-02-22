@@ -1,7 +1,9 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import useSWR from 'swr'
 import QRCode from 'qrcode.react'
 import Dialog from '../../components/dialog/dialog'
+import { postWereadLoginInfo } from '../../services/weread'
+import { toast } from 'react-toastify'
 
 type WeReadLoginProps = {
 }
@@ -10,10 +12,25 @@ interface WereadLoginResponse {
   uid: string
 }
 
-function WeReadQRCode() {
-  const { data, error, isValidating } = useSWR<WereadLoginResponse>('/v2/weread/login')
+type WeReadQRCodeProps = {
+  onSuccess: () => void
+}
 
-  console.log(data, error, isValidating)
+function WeReadQRCode(props: WeReadQRCodeProps) {
+  const { data, revalidate } = useSWR<WereadLoginResponse>('/v2/weread/login')
+
+  useEffect(() => {
+    if (!data) {
+      return
+    }
+    postWereadLoginInfo(data?.uid).then(res => {
+      props.onSuccess()
+    }).catch(err => {
+      console.error(err)
+      toast.error(err)
+      revalidate()
+    })
+  }, [data?.uid])
 
   if (!data) {
     return null
@@ -21,6 +38,7 @@ function WeReadQRCode() {
 
   return (
     <QRCode
+      onClick={revalidate}
       className='animate__fadeInDown'
       value={`https://weread.qq.com/web/confirm?pf=2&uid=${data.uid}`}
       size={256}
@@ -39,7 +57,9 @@ function WeReadLogin(props: WeReadLoginProps) {
           onCancel={() => setVisible(false)}
           onOk={() => setVisible(false)}
         >
-          <WeReadQRCode />
+          <WeReadQRCode
+            onSuccess={() => setVisible(false)}
+          />
         </Dialog>
       )}
     </div>
